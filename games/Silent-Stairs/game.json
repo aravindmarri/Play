@@ -1,0 +1,16 @@
+{
+  "id": "Silent-Stairs",
+  "title": "Silent Stairs",
+  "subtitle": "A puzzle of perspective.",
+  "description": "Two staircases, suspended in the dark. A little ghost, looking for a way across. Turn the world until the edges meet — and make the impossible feel obvious.",
+  "genre": "3D Puzzle",
+  "engine": "Three.js · WebGL",
+  "playMode": "Single player · Browser",
+  "repository": "aravindmarri/Silent-Stairs",
+  "ref": "main",
+  "build": {
+    "type": "vite",
+    "output": "dist"
+  },
+  "featured": true
+}

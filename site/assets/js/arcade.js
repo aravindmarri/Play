@@ -1,7 +1,7 @@
 import * as THREE from 'three';
-import {createStaircase,createMarker} from './geometry.js';
-import {createGhost} from './ghost.js';
-import {solveConnectorPosition} from './align.js';
+import {createStaircase,createMarker} from '../previews/silent-stairs/geometry.js';
+import {createGhost} from '../previews/silent-stairs/ghost.js';
+import {solveConnectorPosition} from '../previews/silent-stairs/align.js';
 const canvas=document.querySelector('#arcade'),motion=document.querySelector('#motion');
 let paused=matchMedia('(prefers-reduced-motion: reduce)').matches;
 function syncMotion(){motion.setAttribute('aria-pressed',String(!paused));motion.innerHTML=`3D MOTION <span>${paused?'OFF':'ON'}</span>`;}

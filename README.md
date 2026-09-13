@@ -1,37 +1,50 @@
-# Play — Aravind’s Game Gallery
+# PLAY — Aravind’s Game Gallery
 
-A neon 3D arcade featuring [Silent Stairs](https://play.aravindmarri.com/Silent-Stairs/).
+PLAY is the parent website. Each game is an independently developed child, registered under games/.
 
-## Features
-
-- A full-screen Three.js arcade with an upright game cabinet, neon lights, and a floor grid.
-- Scroll-driven camera movement and directional cursor parallax.
-- A preview using the actual Silent Stairs staircase and ghost.
-- Responsive game details, Play links, and a reduced-motion option.
-
-## Run locally
-
-Serve this folder with a local HTTP server, for example:
-
-```sh
-python -m http.server 8000
+```text
+Play/
+├── site/                         # 3D gallery and game library
+│   ├── index.html
+│   └── assets/
+│       ├── css/
+│       ├── js/
+│       ├── vendor/
+│       └── previews/silent-stairs/
+├── games/
+│   └── Silent-Stairs/game.json    # Child settings and source repository
+├── scripts/build-games.mjs       # Builds every registered child
+├── tests/                        # Publishing checks
+├── docs/adding-games.md
+├── .github/workflows/publish.yml
+├── package.json
+└── CNAME
 ```
 
-Open `http://localhost:8000`. No build step is required. JavaScript modules need an HTTP server; opening `index.html` directly from disk will not work.
+The actual game source remains in [Silent-Stairs](https://github.com/aravindmarri/Silent-Stairs). PLAY downloads it when publishing and places the built game at [play.aravindmarri.com/Silent-Stairs/](https://play.aravindmarri.com/Silent-Stairs/). Other children follow the same /Game-Id/ address pattern.
 
-## Files
+## Develop locally
 
-- `index.html` — page content and game links
-- `style.css` — layout, colors, typography, and mobile styles
-- `app.js` — arcade scene and camera interactions
-- `geometry.js`, `ghost.js`, `align.js` — preview components from [Silent Stairs](https://github.com/aravindmarri/Silent-Stairs)
-- `three.module.js`, `three.core.js` — Three.js runtime
-- `THREE-LICENSE.txt` — Three.js license
+Use Node.js 22 or newer, npm, and Git. PLAY itself has no npm dependencies.
 
-The arcade screen is a preview. Play opens the full game in a new tab.
+```sh
+npm run validate
+npm test
+npm run build
+```
 
-Google Fonts supplies Orbitron and Space Grotesk; system fonts are used as fallbacks.
+Serve the generated _site/ directory with a local HTTP server. Do not open HTML directly from disk. Temporary game checkouts and npm downloads live in .cache/; neither .cache/ nor _site/ belongs in Git.
 
-## Publishing games
+## Add games
 
-The Publish Play and games workflow builds the latest main branch of aravindmarri/Silent-Stairs and publishes it under /Silent-Stairs/ alongside the gallery. It runs when this repository changes, or manually from the Actions tab. After updating the separate game repository, run this workflow to publish the latest game here.
+Add one games/Your-Game/game.json registration. The shared builder supports Vite and static HTML projects, generates the library catalog, and keeps each child’s assets under its own URL. See [the add-game guide](docs/adding-games.md).
+
+The library supports search and Show more games in batches of 24. The homepage loads only its featured 3D preview, so adding games does not load all their runtimes. The current cabinet is a curated Silent Stairs preview; setting featured in a registration does not automatically create a new 3D preview.
+
+## Publish
+
+Changes pushed to PLAY/main publish automatically. After pushing changes only to a child repository, open PLAY → Actions → Publish Play and games → Run workflow. Game updates remain manual; there is no scheduled polling or cross-repository trigger.
+
+All registered games must build successfully before a complete website is deployed. The current live site stays available if a build fails.
+
+Three.js and its license are in site/assets/vendor/. Google Fonts supplies Orbitron and Space Grotesk with system fallbacks.

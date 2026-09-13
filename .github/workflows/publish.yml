@@ -1,50 +1,37 @@
 name: Publish Play and games
+
 on:
   push:
     branches: [main]
   workflow_dispatch:
+
 permissions:
   contents: read
+
 concurrency:
   group: pages
   cancel-in-progress: false
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 30
     steps:
-      - uses: actions/checkout@v4
-      - name: Check out Silent Stairs
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
-          repository: aravindmarri/Silent-Stairs
-          ref: main
-          path: .games/Silent-Stairs
           persist-credentials: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
-          cache: npm
-          cache-dependency-path: .games/Silent-Stairs/package-lock.json
-      - name: Build Silent Stairs
-        working-directory: .games/Silent-Stairs
-        run: |
-          npm ci
-          npm run build -- --base=/Silent-Stairs/
-      - name: Assemble gallery and game
-        run: |
-          mkdir -p _site/Silent-Stairs
-          cp index.html style.css app.js align.js geometry.js ghost.js three.core.js three.module.js THREE-LICENSE.txt CNAME _site/
-          cp -R .games/Silent-Stairs/dist/. _site/Silent-Stairs/
-          touch _site/.nojekyll
-          python3 - <<'PY'
-          from pathlib import Path
-          page = Path('_site/index.html')
-          page.write_text(page.read_text().replace('https://aravindmarri.github.io/Silent-Stairs/', '/Silent-Stairs/'))
-          assert Path('_site/Silent-Stairs/index.html').is_file()
-          PY
+          package-manager-cache: false
+      - name: Test the game registry and publishing helpers
+        run: npm test
+      - name: Build the gallery and all registered games
+        run: npm run build
       - uses: actions/upload-pages-artifact@v3
         with:
           path: _site
+
   deploy:
     needs: build
     runs-on: ubuntu-latest
