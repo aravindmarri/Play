@@ -1,6 +1,6 @@
 # Play — Aravind’s Game Gallery
 
-A neon 3D arcade featuring [Silent Stairs](https://aravindmarri.github.io/Silent-Stairs/).
+A neon 3D arcade featuring [Silent Stairs](https://play.aravindmarri.com/Silent-Stairs/).
 
 ## Features
 
@@ -31,3 +31,7 @@ Open `http://localhost:8000`. No build step is required. JavaScript modules need
 The arcade screen is a preview. Play opens the full game in a new tab.
 
 Google Fonts supplies Orbitron and Space Grotesk; system fonts are used as fallbacks.
+
+## Publishing games
+
+The Publish Play and games workflow builds the latest main branch of aravindmarri/Silent-Stairs and publishes it under /Silent-Stairs/ alongside the gallery. It runs when this repository changes, or manually from the Actions tab. After updating the separate game repository, run this workflow to publish the latest game here.
