@@ -22,7 +22,7 @@ function card(game) {
 }
 
 try {
-  const response = await fetch('./games.json');
+  const response = await fetch('./games.json', { cache: 'no-store' });
   if (!response.ok) throw new Error(`Catalog returned ${response.status}`);
   const games = await response.json();
   document.querySelector('#game-count').textContent = String(games.length).padStart(2, '0');
@@ -51,3 +51,4 @@ try {
   status.textContent = 'The collection could not load. You can still play the featured game above.';
   search.disabled = true;
 }
+
