@@ -1,0 +1,92 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#091310">
+    <meta name="description" content="A pocket-size pool hall. Rack up, call your shot, and clear the table.">
+    <title>Eight Ball — PLAYROOM</title>
+    <link rel="stylesheet" href="./style.css">
+    <script type="module" src="./pool.js"></script>
+  </head>
+  <body>
+    <div class="page-glow" aria-hidden="true"></div>
+    <main class="game-shell">
+      <header class="topbar">
+        <a class="wordmark" href="../" aria-label="Back to Playroom"><span class="wordmark-mark">P</span><span>PLAYROOM<small>THE GAME ROOM</small></span></a>
+        <span class="topbar-center">A LITTLE FRIENDLY COMPETITION</span>
+        <button class="text-button" id="sound-button" type="button" aria-pressed="true"><span class="sound-dot"></span> SOUND ON</button>
+      </header>
+
+      <section class="game-heading" aria-labelledby="game-title">
+        <div><p class="eyebrow"><span>02</span> THE CLASSICS</p><h1 id="game-title">EIGHT <span>BALL</span></h1></div>
+        <p class="heading-note">Take your time.<br><span>Make it count.</span></p>
+      </section>
+
+      <section class="match-card" aria-label="Match score">
+        <article class="player-card active" id="player-card-0">
+          <span class="turn-light" aria-hidden="true"></span>
+          <div class="player-info"><span class="player-label">PLAYER ONE <span class="you-tag">YOU</span></span><strong id="player-name-0">You</strong></div>
+          <div class="ball-group" id="player-group-0" aria-label="No group assigned yet"><span>OPEN TABLE</span></div>
+          <span class="balls-remaining" id="remaining-0">—</span>
+        </article>
+        <div class="match-center"><span class="match-label">THE BREAK</span><span class="match-score"><b>0</b><i>:</i><b>0</b></span></div>
+        <article class="player-card" id="player-card-1">
+          <span class="turn-light" aria-hidden="true"></span>
+          <div class="player-info"><span class="player-label">PLAYER TWO</span><strong id="player-name-1">Player 2</strong></div>
+          <div class="ball-group" id="player-group-1" aria-label="No group assigned yet"><span>OPEN TABLE</span></div>
+          <span class="balls-remaining" id="remaining-1">—</span>
+        </article>
+      </section>
+
+      <section class="table-card" aria-label="Eight Ball Pool game">
+        <div class="table-topline"><span><span class="live-dot"></span><span id="turn-label">YOUR TURN</span></span><button class="text-button game-mode" id="mode-button" type="button" aria-label="Switch between two player and solo practice mode">2 PLAYERS <span>⌄</span></button></div>
+        <div class="canvas-wrap" id="canvas-wrap">
+          <canvas id="pool-table" aria-label="Pool table. Move the pointer to aim. Drag backward and release to shoot." tabindex="0"></canvas>
+          <div class="ball-tooltip" id="ball-tooltip" role="tooltip" hidden>
+            <strong id="ball-tooltip-number"></strong>
+            <span id="ball-tooltip-group"></span>
+          </div>
+          <div class="hit-point-picker" id="hit-point-picker" hidden>
+            <section class="hit-point-card" role="dialog" aria-modal="true" aria-labelledby="hit-point-title">
+              <button class="hit-point-close" id="hit-point-close" type="button" aria-label="Close contact point selector">×</button>
+              <p class="eyebrow"><span>CUE CONTROL</span></p>
+              <h2 id="hit-point-title">Choose the contact point</h2>
+              <button class="cue-contact-ball" id="cue-contact-ball" type="button" aria-label="Choose where the cue tip strikes the ball">
+                <span class="cue-contact-marker" id="cue-contact-marker"></span>
+              </button>
+              <p>Click anywhere on the ball. The chosen point changes the cue tip position.</p>
+              <small>ESC TO CANCEL</small>
+            </section>
+          </div>
+          <div class="table-corner table-corner-left" aria-hidden="true">P<span>·</span>R</div>
+          <div class="table-corner table-corner-right" aria-hidden="true">8<span>·</span>B</div>
+        </div>
+        <div class="table-legend"><span>FELT 01</span><span class="legend-line"></span><span>EST. JUST NOW</span></div>
+      </section>
+
+      <section class="control-panel" aria-label="Shot controls">
+        <div class="shot-instructions"><span class="instruction-icon" aria-hidden="true">↗</span><p id="instruction">Aim, pull the cue back, then release to shoot.</p></div>
+        <div class="power-control" aria-label="Cue pull power">
+          <div class="power-heading"><label>STROKE POWER</label><span id="power-readout">READY</span></div>
+          <div class="power-meter" id="power-meter" role="progressbar" aria-label="Cue pull power" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span id="power-fill"></span></div>
+        </div>
+        <div class="game-tools" aria-label="Game aids">
+          <button class="tool-button" id="hint-button" type="button" aria-label="Show legal target balls, once per turn"><span>HINT</span><small>1 / TURN</small></button>
+          <button class="tool-button" id="hit-point-button" type="button" aria-label="Select the point where the cue tip hits the cue ball"><span>HIT POINT</span><small>SELECT</small></button>
+        </div>
+        <button class="shoot-button" id="shoot-button" type="button" aria-label="Shoot using the current cue pull"><span class="shoot-icon" aria-hidden="true">↗</span><span id="shoot-label">SHOOT</span><kbd>SPACE</kbd></button>
+        <button class="rack-button" id="rack-button" type="button" aria-label="Start a new game">NEW RACK <span aria-hidden="true">↻</span></button>
+      </section>
+
+      <footer class="game-footer"><p>THE RULES, ROUGHLY: CLEAR YOUR BALLS. POCKET THE 8.</p><div><kbd>←</kbd><kbd>→</kbd><span>ADJUST AIM</span><kbd>SPACE</kbd><span>SHOOT</span><kbd>ESC</kbd><span>CANCEL</span></div></footer>
+    </main>
+    <div class="toast" id="toast" role="status" aria-live="polite"></div>
+    <dialog id="mode-dialog" class="mode-dialog" aria-labelledby="mode-title">
+      <form method="dialog"><button class="dialog-close" aria-label="Close">×</button></form>
+      <p class="eyebrow"><span>CHOOSE YOUR GAME</span></p><h2 id="mode-title">Who's at the table?</h2>
+      <button class="mode-option" data-mode="local" type="button"><span>Two players</span><small>Pass the device between turns.</small><b>01 →</b></button>
+      <button class="mode-option" data-mode="solo" type="button"><span>Solo practice</span><small>Take both turns and see what you can sink.</small><b>02 →</b></button>
+    </dialog>
+  </body>
+</html>
