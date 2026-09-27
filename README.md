@@ -25,6 +25,8 @@ The actual game source remains in [Silent-Stairs](https://github.com/aravindmarr
 
 ## Develop locally
 
+Eight Ball Pool lives in `games/Eight-Ball-Pool/source/`, with its registration alongside it. It publishes at `/Eight-Ball-Pool/` and appears automatically in the searchable game library. Its static source currently belongs to PLAY; commit pool updates here to publish them with the gallery. Silent Stairs continues to use its independent repository.
+
 Use Node.js 22 or newer, npm, and Git. PLAY itself has no npm dependencies.
 
 ```sh

@@ -1,0 +1,13 @@
+{
+  "id": "Eight-Ball-Pool",
+  "title": "Eight Ball Pool",
+  "subtitle": "Take your time. Make it count.",
+  "description": "A 3D pool table with rolling numbered balls, pull-back cue controls, bank-shot guides and two-player matches. Aim, choose your power, and clear your colors before the eight.",
+  "genre": "Sports · Pool",
+  "engine": "Three.js · WebGL",
+  "playMode": "Two players · Solo · Browser",
+  "repository": "aravindmarri/Play",
+  "ref": "main",
+  "build": { "type": "static", "output": "games/Eight-Ball-Pool/source" },
+  "featured": false
+}
