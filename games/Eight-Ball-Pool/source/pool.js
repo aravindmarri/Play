@@ -7,6 +7,7 @@ const powerMeter = document.querySelector('#power-meter');
 const powerFill = document.querySelector('#power-fill');
 const hintButton = document.querySelector('#hint-button');
 const hitPointButton = document.querySelector('#hit-point-button');
+const resetHitPointButton = document.querySelector('#reset-hit-point-button');
 const canvasWrap = document.querySelector('#canvas-wrap');
 const instruction = document.querySelector('#instruction');
 const turnLabel = document.querySelector('#turn-label');
@@ -103,6 +104,8 @@ let soundEnabled = true;
 let audioContext;
 let lastSoundAt = 0;
 let computerTimer = 0;
+let musicTimer = 0;
+let musicStep = 0;
 
 function makeBall(number, x, y) {
   const rotation = number === 0 ? new THREE.Quaternion() : BALL_NUMBER_UP.clone();
@@ -137,6 +140,7 @@ function makeRack() {
   canvasWrap.classList.remove('hit-point-mode', 'dragging-cue');
   hitPointButton.setAttribute('aria-pressed', 'false');
   hitPointButton.querySelector('small').textContent = 'SELECT';
+  resetHitPointButton.disabled = true;
   updatePowerMeter(0, true);
   const positions = [];
   const rackX = 786;
@@ -270,6 +274,7 @@ function updateUI(message, label) {
   shootButton.disabled = disabled || hitPointMode;
   hintButton.disabled = disabled || !hintAvailable || hitPointMode;
   hitPointButton.disabled = disabled;
+  resetHitPointButton.disabled = disabled || !contactPointSelected;
   hintButton.querySelector('small').textContent = hintAvailable ? '1 / TURN' : 'USED';
   hitPointButton.querySelector('small').textContent = hitPointMode ? 'CLICK BALL' : contactPointSelected ? 'CHANGE' : 'SELECT';
   hitPointButton.setAttribute('aria-pressed', String(hitPointMode));
@@ -324,10 +329,13 @@ function shoot(powerValue, computer = false, pullDistance = MAX_PULL_DISTANCE * 
   lastPullDistance = strokePull;
   updatePowerMeter(power);
   cueStrike = { angle: aimingAngle, age: 0, power, pullDistance: strokePull };
+  cueStrike.contactLocal = contactPointSelected ? selectedHitLocal.clone() : null;
   physicsAccumulator = 0;
   const speed = 200 + power * 1150;
   cue.vx = Math.cos(aimingAngle) * speed;
   cue.vy = Math.sin(aimingAngle) * speed;
+  playSfx('cue', power);
+  if (contactPointSelected) resetHitPoint(false);
   moving = true;
   shot = { shooter: currentPlayer, groupAtStart: playerGroups[currentPlayer], ownBallsAtStart: remainingFor(currentPlayer), firstHit: null, railAfterContact: false, pocketed: [], scratch: false, broke: breakPending };
   breakPending = false;
@@ -343,7 +351,7 @@ function pocket(ball, pocketIndex) {
   if (shot && !shot.pocketed.includes(ball.number)) shot.pocketed.push(ball.number);
   if (ball.number === 0 && shot) shot.scratch = true;
   if (shot && ball.number !== 0) shot.railAfterContact = true;
-  sound(ball.number === 8 ? 84 : 105, 0.045, 'sine');
+  playSfx(ball.number === 8 ? 'eightPocket' : ball.number === 0 ? 'scratch' : 'pocket', .55);
 }
 
 function nearMouthForX(ball, y) {
@@ -376,10 +384,10 @@ function physicsStep(dt) {
     const pocketIndex = POCKETS.findIndex(p => Math.hypot(ball.x - p.x, ball.y - p.y) < p.r - BALL_R * 0.3);
     if (pocketIndex !== -1) { pocket(ball, pocketIndex); continue; }
     const r = BALL_R;
-    if (ball.x < TABLE.left + r && !nearMouthForX(ball, ball.y)) { ball.x = TABLE.left + r; ball.vx = Math.abs(ball.vx) * 0.79; if (shot && shot.firstHit !== null && ball.number !== 0) shot.railAfterContact = true; sound(Math.abs(ball.vx), 0.019, 'triangle'); }
-    if (ball.x > TABLE.right - r && !nearMouthForX(ball, ball.y)) { ball.x = TABLE.right - r; ball.vx = -Math.abs(ball.vx) * 0.79; if (shot && shot.firstHit !== null && ball.number !== 0) shot.railAfterContact = true; sound(Math.abs(ball.vx), 0.019, 'triangle'); }
-    if (ball.y < TABLE.top + r && !nearMouthForY(ball, ball.x)) { ball.y = TABLE.top + r; ball.vy = Math.abs(ball.vy) * 0.79; if (shot && shot.firstHit !== null && ball.number !== 0) shot.railAfterContact = true; sound(Math.abs(ball.vy), 0.019, 'triangle'); }
-    if (ball.y > TABLE.bottom - r && !nearMouthForY(ball, ball.x)) { ball.y = TABLE.bottom - r; ball.vy = -Math.abs(ball.vy) * 0.79; if (shot && shot.firstHit !== null && ball.number !== 0) shot.railAfterContact = true; sound(Math.abs(ball.vy), 0.019, 'triangle'); }
+    if (ball.x < TABLE.left + r && !nearMouthForX(ball, ball.y)) { ball.x = TABLE.left + r; ball.vx = Math.abs(ball.vx) * 0.79; if (shot && shot.firstHit !== null && ball.number !== 0) shot.railAfterContact = true; playSfx('rail', Math.abs(ball.vx) / 760); }
+    if (ball.x > TABLE.right - r && !nearMouthForX(ball, ball.y)) { ball.x = TABLE.right - r; ball.vx = -Math.abs(ball.vx) * 0.79; if (shot && shot.firstHit !== null && ball.number !== 0) shot.railAfterContact = true; playSfx('rail', Math.abs(ball.vx) / 760); }
+    if (ball.y < TABLE.top + r && !nearMouthForY(ball, ball.x)) { ball.y = TABLE.top + r; ball.vy = Math.abs(ball.vy) * 0.79; if (shot && shot.firstHit !== null && ball.number !== 0) shot.railAfterContact = true; playSfx('rail', Math.abs(ball.vy) / 760); }
+    if (ball.y > TABLE.bottom - r && !nearMouthForY(ball, ball.x)) { ball.y = TABLE.bottom - r; ball.vy = -Math.abs(ball.vy) * 0.79; if (shot && shot.firstHit !== null && ball.number !== 0) shot.railAfterContact = true; playSfx('rail', Math.abs(ball.vy) / 760); }
   }
 
   for (let i = 0; i < active.length; i++) {
@@ -408,7 +416,7 @@ function physicsStep(dt) {
         b.vy += impulse * ny;
         if (shot && a.number === 0 && b.number !== 0 && shot.firstHit === null) shot.firstHit = b.number;
         if (shot && b.number === 0 && a.number !== 0 && shot.firstHit === null) shot.firstHit = a.number;
-        sound(Math.abs(relativeSpeed), 0.033, 'sine');
+        playSfx('ball', Math.abs(relativeSpeed) / 1000);
       }
     }
   }
@@ -717,11 +725,11 @@ function buildTable() {
   ground.receiveShadow = true;
   scene.add(ground);
 
-  const wood = new THREE.MeshPhysicalMaterial({ color: 0x352216, roughness: .24, metalness: .04, clearcoat: .62, clearcoatRoughness: .2 });
-  const warmEdge = new THREE.MeshStandardMaterial({ color: 0x65503a, roughness: .3, metalness: .18 });
-  const cushion = new THREE.MeshStandardMaterial({ color: 0x1c3929, roughness: .66 });
-  const cushionTop = new THREE.MeshStandardMaterial({ color: 0x365a40, roughness: .62 });
-  const brass = new THREE.MeshStandardMaterial({ color: 0xc6a56b, metalness: .6, roughness: .3 });
+  const wood = new THREE.MeshPhysicalMaterial({ color: 0x1a211c, roughness: .2, metalness: .12, clearcoat: .78, clearcoatRoughness: .13 });
+  const warmEdge = new THREE.MeshPhysicalMaterial({ color: 0x8e7045, roughness: .24, metalness: .52, clearcoat: .46 });
+  const cushion = new THREE.MeshStandardMaterial({ color: 0x163b2a, roughness: .58, metalness: .03 });
+  const cushionTop = new THREE.MeshStandardMaterial({ color: 0x3b6e4e, roughness: .48, metalness: .07 });
+  const brass = new THREE.MeshPhysicalMaterial({ color: 0xd2ad69, metalness: .78, roughness: .21, clearcoat: .25 });
 
   // Separate the cabinet from the cloth to prevent striped depth artifacts.
   addBox(9.94, .5, 5.54, wood, 0, -.29, 0, false);
@@ -939,8 +947,23 @@ function selectCueHitPoint(event) {
   selectedHitLocal.copy(pendingHitLocal);
   contactPointSelected = true;
   setHitPointMode(false);
+  resetHitPointButton.disabled = false;
+  playSfx('select', .55);
   instruction.textContent = 'Contact point set. Press anywhere and pull back to shoot.';
   setToast('Cue contact point selected.');
+}
+
+function resetHitPoint(announce = true) {
+  contactPointSelected = false;
+  selectedHitLocal.set(0, 0, 1);
+  pendingHitLocal.set(0, 0, 1);
+  resetHitPointButton.disabled = true;
+  hitPointButton.querySelector('small').textContent = 'SELECT';
+  if (announce) {
+    playSfx('reset', .5);
+    instruction.textContent = 'Hit point reset for the next shot.';
+    setToast('Cue contact point reset.');
+  }
 }
 
 function cancelShotSetup(message = 'Shot setup cancelled.') {
@@ -1016,7 +1039,7 @@ function updateAimAndCue() {
   const direction = new THREE.Vector3(ux, 0, uz).normalize();
   const cueWorld = worldPoint(cue.x, cue.y, CLOTH_Y + WORLD_BALL_R);
   const cueMesh = ballMeshes.get(0);
-  const contactLocal = hitPointMode ? pendingHitLocal : selectedHitLocal;
+  const contactLocal = inStrike && cueStrike.contactLocal ? cueStrike.contactLocal : hitPointMode ? pendingHitLocal : selectedHitLocal;
   let tipTarget = cueMesh.localToWorld(contactLocal.clone().multiplyScalar(WORLD_BALL_R));
   if (!contactPointSelected && !hitPointMode) tipTarget = cueWorld.clone().addScaledVector(direction, WORLD_BALL_R);
   let tipGap = .56 + (drag ? drag.pullDistance : 0);
@@ -1211,26 +1234,35 @@ canvas.addEventListener('pointerleave', () => {
 });
 window.addEventListener('resize', resizeCanvas);
 
-shootButton.addEventListener('click', () => shoot(lastStrokePower, false, lastPullDistance));
+shootButton.addEventListener('click', () => { wakeAudio(); shoot(lastStrokePower, false, lastPullDistance); });
 hintButton.addEventListener('click', () => {
+  wakeAudio();
   if (!hintAvailable || moving || matchOver) return;
   hintAvailable = false;
   showLegalTargetHint();
   updateUI(null);
+  playSfx('hint', .45);
   instruction.textContent = 'The glowing balls are your legal targets. Take your shot when ready.';
   setToast('Legal target balls are highlighted until your shot.');
 });
-hitPointButton.addEventListener('click', () => setHitPointMode(!hitPointMode));
+hitPointButton.addEventListener('click', () => {
+  wakeAudio();
+  playSfx('button', .35);
+  setHitPointMode(!hitPointMode);
+});
+resetHitPointButton.addEventListener('click', () => { wakeAudio(); resetHitPoint(); });
 cueContactBall.addEventListener('pointerdown', event => {
   event.preventDefault();
   event.stopPropagation();
   selectCueHitPoint(event);
 });
-hitPointClose.addEventListener('click', () => setHitPointMode(false));
+hitPointClose.addEventListener('click', () => { wakeAudio(); playSfx('button', .25); setHitPointMode(false); });
 hitPointPicker.addEventListener('click', event => { if (event.target === hitPointPicker) setHitPointMode(false); });
-document.querySelector('#rack-button').addEventListener('click', () => makeRack());
-document.querySelector('#mode-button').addEventListener('click', () => modeDialog.showModal());
+document.querySelector('#rack-button').addEventListener('click', () => { wakeAudio(); playSfx('rack', .45); makeRack(); });
+document.querySelector('#mode-button').addEventListener('click', () => { wakeAudio(); playSfx('button', .25); modeDialog.showModal(); });
 document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => {
+  wakeAudio();
+  playSfx('button', .35);
   mode = button.dataset.mode;
   modeDialog.close();
   makeRack();
@@ -1259,27 +1291,68 @@ document.querySelector('#sound-button').addEventListener('click', event => {
   soundEnabled = !soundEnabled;
   event.currentTarget.setAttribute('aria-pressed', String(soundEnabled));
   event.currentTarget.innerHTML = `<span class="sound-dot"></span> SOUND ${soundEnabled ? 'ON' : 'OFF'}`;
-  if (soundEnabled) wakeAudio();
+  if (soundEnabled) { wakeAudio(); playSfx('button', .3); }
 });
 
 function wakeAudio() {
-  if (!soundEnabled || audioContext) return;
-  try { audioContext = new AudioContext(); } catch { soundEnabled = false; }
+  if (!soundEnabled) return;
+  try {
+    if (!audioContext) audioContext = new AudioContext();
+    if (audioContext.state === 'suspended') audioContext.resume();
+    startBackgroundMusic();
+  } catch { soundEnabled = false; }
 }
 
-function sound(speed, volume, type) {
-  if (!soundEnabled || !audioContext || speed < 95) return;
-  const now = audioContext.currentTime;
-  if (now - lastSoundAt < .036) return;
-  lastSoundAt = now;
+function tone(frequency, duration, volume, type = 'sine', when = audioContext?.currentTime || 0) {
+  if (!audioContext) return;
   const osc = audioContext.createOscillator();
   const gain = audioContext.createGain();
   osc.type = type;
-  osc.frequency.setValueAtTime(Math.max(78, Math.min(660, 120 + speed * 1.1)), now);
-  gain.gain.setValueAtTime(volume, now);
-  gain.gain.exponentialRampToValueAtTime(.001, now + .055);
+  osc.frequency.setValueAtTime(frequency, when);
+  gain.gain.setValueAtTime(.0001, when);
+  gain.gain.exponentialRampToValueAtTime(volume, when + .012);
+  gain.gain.exponentialRampToValueAtTime(.0001, when + duration);
   osc.connect(gain); gain.connect(audioContext.destination);
-  osc.start(now); osc.stop(now + .057);
+  osc.start(when); osc.stop(when + duration + .02);
+}
+
+function playSfx(kind, intensity = .5) {
+  if (!soundEnabled || !audioContext) return;
+  const now = audioContext.currentTime;
+  if (now - lastSoundAt < .028 && ['ball', 'rail'].includes(kind)) return;
+  lastSoundAt = now;
+  const amount = Math.max(.08, Math.min(1, intensity));
+  const sounds = {
+    cue: () => { tone(88, .09, .042 * amount, 'triangle', now); tone(174, .045, .018 * amount, 'sine', now + .012); },
+    ball: () => tone(310 + amount * 150, .045, .022 * amount, 'sine', now),
+    rail: () => { tone(130 + amount * 45, .075, .018 * amount, 'triangle', now); tone(75, .09, .01 * amount, 'sine', now); },
+    pocket: () => { tone(174, .15, .03 * amount, 'sine', now); tone(232, .12, .014 * amount, 'triangle', now + .025); },
+    eightPocket: () => { tone(110, .27, .045 * amount, 'sine', now); tone(220, .24, .025 * amount, 'triangle', now + .035); },
+    scratch: () => { tone(90, .22, .04 * amount, 'sawtooth', now); },
+    select: () => { tone(420, .09, .025 * amount, 'sine', now); tone(620, .11, .02 * amount, 'sine', now + .045); },
+    reset: () => { tone(360, .07, .02 * amount, 'triangle', now); tone(220, .11, .018 * amount, 'triangle', now + .035); },
+    hint: () => { tone(523, .12, .017 * amount, 'sine', now); tone(659, .16, .018 * amount, 'sine', now + .05); },
+    rack: () => { tone(170, .13, .025 * amount, 'triangle', now); tone(240, .08, .014 * amount, 'sine', now + .035); },
+    button: () => tone(280, .05, .014 * amount, 'triangle', now),
+  };
+  sounds[kind]?.();
+}
+
+function startBackgroundMusic() {
+  if (musicTimer || !audioContext || !soundEnabled) return;
+  const chords = [[73.42, 110, 146.83], [65.41, 98, 130.81], [82.41, 123.47, 164.81], [61.74, 92.5, 123.47]];
+  const playStep = () => {
+    if (!soundEnabled || !audioContext) { clearInterval(musicTimer); musicTimer = 0; return; }
+    const chord = chords[musicStep % chords.length];
+    const now = audioContext.currentTime;
+    tone(chord[0], .78, .006, 'sine', now);
+    tone(chord[1], .62, .004, 'sine', now + .05);
+    tone(chord[2], .42, .0028, 'triangle', now + .22);
+    if (musicStep % 2 === 0) tone(chord[1] * 2, .16, .0024, 'sine', now + .48);
+    musicStep++;
+  };
+  playStep();
+  musicTimer = setInterval(playStep, 820);
 }
 
 build3DScene();
