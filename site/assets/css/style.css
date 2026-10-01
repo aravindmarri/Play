@@ -6,3 +6,66 @@
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}*{transition:none!important}}
 
 .library-section{position:relative;padding:100px 6%;background:#070c18ed;border-top:1px solid #8eb4ed25;min-height:70svh;scroll-margin-top:70px}.library-section .eyebrow{margin-bottom:18px}.library-section h2{font-size:clamp(26px,3vw,44px)}.search-label{display:block;margin:35px 0 10px;color:#b8cbe5;font-size:14px}#game-search{display:block;width:min(100%,550px);padding:16px 18px;color:#ecf5ff;background:#101a2c;border:1px solid #577da061;border-radius:10px;font:inherit}#game-search:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}#library-status{color:#96aac8;font-size:14px;margin:22px 0}.game-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,290px),1fr));gap:24px}.library-card{padding:28px;border:1px solid #829fd52b;border-radius:18px;background:linear-gradient(140deg,#111d30,#100f23);display:flex;flex-direction:column}.library-card h3{font:700 23px 'Orbitron',sans-serif;line-height:1.4;margin:24px 0 0}.library-card .tag{width:max-content;max-width:100%;margin:0}.library-card .subtitle{font-size:16px}.library-card .description{font-size:15px;line-height:1.75;margin-bottom:26px}.library-card .play-button{margin-top:auto;width:max-content}.load-more{display:block;margin:32px auto 0;padding:15px 24px;background:#16243a;color:#d5edff;border:1px solid #6dbde65e;border-radius:8px;cursor:pointer;letter-spacing:1px}.hero-counter>span{max-width:110px;line-height:1.6}@media(max-width:650px){.library-section{padding:70px 6%}nav{gap:5px}nav a,nav button{padding:9px 8px;font-size:10px}.library-card{padding:24px}}
+
+/* The gallery is a continuous arcade: its live Three.js cabinets transition with each game panel. */
+:root{--cyan:#6fe3ff;--violet:#9c7cff;--mint:#81f0d1;--ink:#060912}
+body{background:#05070e;overflow-x:hidden}
+#arcade{background:radial-gradient(ellipse at 55% 60%,#11152a 0%,transparent 58%),#05070e}
+.vignette{background:linear-gradient(90deg,#04060b88,transparent 78%),linear-gradient(0deg,#05070e66,transparent 20%,transparent 86%,#05070e88)}
+header{padding:23px 4.5%;background:linear-gradient(#05070ee8,transparent);backdrop-filter:blur(2px)}
+.brand{font-size:15px;letter-spacing:.01em}
+nav a,nav button{padding:12px 18px;border-color:#a5b8db2c;background:#080c16a8;font-size:11px;letter-spacing:1.5px}
+nav a:hover,nav button:hover{border-color:#79dfff99;background:#121a2b}
+.hero{min-height:100svh;padding:130px 7% 90px;align-items:center}
+.hero-copy{max-width:780px;position:relative;z-index:1}
+.hero .eyebrow{color:#9eb1ce;margin-bottom:25px;letter-spacing:3px}
+.hero h1{font-size:clamp(58px,8.2vw,128px);line-height:1.04;letter-spacing:-.065em}
+.hero-subtitle{font-size:clamp(18px,2vw,27px);line-height:1.45;letter-spacing:.04em;margin:24px 0 18px;color:#d3e2fa}
+.hero-description{font-size:15px;line-height:1.9;color:#aab8ce}
+.scroll-cue{margin-top:34px;font-weight:600;letter-spacing:2px;transition:color .25s}
+.scroll-cue:hover{color:#fff}
+.scroll-cue span{width:72px;background:linear-gradient(90deg,var(--cyan),#a388ff)}
+.hero-counter{right:7%;bottom:54px;gap:18px}
+.hero-counter b{font-size:36px;color:#9ce8ff}
+.hero-counter>span{font-size:11px;letter-spacing:2px;color:#99a8c3}
+.hero-scroll-note{position:absolute;right:7%;top:50%;writing-mode:vertical-rl;transform:translateY(-50%);font-size:10px;letter-spacing:2px;color:#8494b0;display:flex;gap:14px;align-items:center}
+.hero-scroll-note span{color:var(--cyan);font-size:18px}
+.game-section{min-height:100svh;padding:105px 7% 75px;align-items:center;justify-content:flex-start;overflow:hidden;scroll-margin-top:0}
+.game-section::before{content:'';position:absolute;inset:10% 3% 7%;border:1px solid #9dc5ff16;border-radius:34px;pointer-events:none;transform:skewY(-1.2deg)}
+.game-card{width:min(510px,44vw);max-width:510px;padding:clamp(30px,3.2vw,46px);position:relative;z-index:2;opacity:0;transform:translate3d(0,20px,0);transition:opacity .72s ease,transform .85s cubic-bezier(.2,.75,.25,1);background:linear-gradient(145deg,#080e1ddf,#0a0d19e8);border-color:#9abfee30;box-shadow:0 28px 100px #0007,inset 0 1px 0 #e0f1ff0c}
+.game-card.is-visible{opacity:1;transform:translate3d(0,0,0)}
+.game-label{margin-bottom:25px;color:#72def7}
+.game-card h2{font-size:clamp(36px,4vw,62px);line-height:1.17;letter-spacing:-.055em;text-shadow:0 0 34px #7edcff2a}
+.game-card .subtitle{font-size:18px;margin:18px 0;color:#a9bbd8}
+.game-card .description{font-size:15px;line-height:1.9;color:#bdc9dd;margin:0 0 26px}
+.game-card dl{padding-top:19px;margin-bottom:26px}
+.game-card dl>div{margin:10px 0;gap:17px}
+.game-card dt{width:52px;font-size:10px}
+.game-card dd{font-size:13px}
+.game-card .play-button{font-size:12px;padding:17px 23px;gap:30px}
+.source-link{font-size:10px;letter-spacing:1.6px;margin-top:22px}
+.game-pool{justify-content:flex-end}
+.game-chess{justify-content:flex-start}
+.game-chess .scene-note{right:7%;left:auto;color:#73e3d5}
+.game-chess .next-game{right:7%;left:auto}
+.game-pool .game-card h2{background:linear-gradient(105deg,#eefcff,#9ee5ff 58%,#b9a3ff);background-clip:text;-webkit-background-clip:text;color:transparent}
+.scene-note{right:7%;bottom:7%;display:flex;align-items:center;gap:13px;font:500 10px 'Space Grotesk',sans-serif;letter-spacing:2px;color:#8de5f6}
+.game-pool .scene-note{left:7%;right:auto;color:#a998ff}
+.scene-note span{color:#b7c5db;opacity:.78}
+.next-game{position:absolute;right:7%;bottom:7%;font-size:9px;letter-spacing:1.8px;color:#7f91ae;display:flex;align-items:center;gap:13px;transition:color .25s}
+.next-game:hover{color:#d9f6ff}
+.next-game span{font-size:15px;color:var(--cyan)}
+.game-pool .next-game{right:auto;left:7%}
+.library-section{background:linear-gradient(150deg,#080c18f5,#090a14f5);border-top:1px solid #8eb4ed25;min-height:78svh;padding:100px 7%}
+.library-section .eyebrow{margin-bottom:16px;color:#78dff4}
+.library-section h2{font-size:clamp(28px,4vw,52px);letter-spacing:-.05em}
+#game-search{border-radius:30px;background:#0b1222;border-color:#718bae55;transition:border-color .2s,box-shadow .2s}
+#game-search:focus{border-color:#72dffc;box-shadow:0 0 0 4px #72dffc16}
+.library-card{border-radius:20px;background:linear-gradient(145deg,#101a2b,#100e20);box-shadow:0 20px 60px #0003;transition:transform .25s,border-color .25s}
+.library-card:hover{transform:translateY(-5px);border-color:#79c7e866}
+.load-more{border-radius:30px}
+footer{background:#05070ed9;border-color:#8eb4ed1a;padding-inline:7%}
+#fallback{box-shadow:0 10px 40px #0008}
+@media(max-width:900px){.game-card{width:48vw;max-width:500px;padding:32px}.hero h1{font-size:9vw}.hero-scroll-note{right:4%}.game-section{padding-inline:5%}.scene-note{right:5%}.game-pool .scene-note{left:5%}}
+@media(max-width:650px){header{padding:16px 5%}.brand{font-size:12px}nav{gap:5px}nav a,nav button{padding:9px 10px;letter-spacing:.6px;font-size:10px}.hero{min-height:100svh;padding:115px 7% 85px;align-items:center}.hero h1{font-size:clamp(48px,13vw,76px);line-height:1.08}.hero .eyebrow{font-size:10px;letter-spacing:1.8px;margin-bottom:22px}.hero-subtitle{font-size:18px;margin:20px 0 14px}.hero-description{font-size:13px}.hero-description br{display:none}.hero-counter{left:7%;right:auto;bottom:37px}.hero-counter b{font-size:30px}.hero-scroll-note{display:none}.game-section{min-height:112svh;padding:39svh 5% 62px;align-items:flex-end}.game-section::before{inset:11% 4% 5%;border-radius:23px}.game-card{width:100%;max-width:none;padding:26px 25px;border-radius:18px;background:linear-gradient(145deg,#080e1def,#0a0d19f4);backdrop-filter:blur(10px)}.game-card h2{font-size:clamp(34px,10vw,48px)}.game-card .subtitle{font-size:16px}.game-card .description{font-size:14px;line-height:1.75;margin-bottom:18px}.game-card dl{padding-top:13px;margin-bottom:20px}.game-card .play-button{padding:15px 19px}.game-card .source-link{display:inline-block;margin:0 0 0 18px}.scene-note{display:none}.next-game{right:7%;bottom:auto;top:31%;font-size:8px}.game-pool .next-game{left:auto;right:7%}.library-section{padding:74px 6%;min-height:82svh}.library-section h2{font-size:30px}.library-card{padding:23px}footer{padding:27px 6%}footer p{order:3;width:100%;font-size:13px;margin:0}}
++@media(prefers-reduced-motion:reduce){.game-card{opacity:1;transform:none;transition:none}.next-game,.library-card{transition:none}}

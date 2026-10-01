@@ -12,7 +12,9 @@ Play/
 │       ├── vendor/
 │       └── previews/silent-stairs/
 ├── games/
-│   └── Silent-Stairs/game.json    # Child settings and source repository
+│   ├── Silent-Stairs/game.json    # Remote child settings and source repository
+│   ├── Eight-Ball-Pool/           # Static game source and registration
+│   └── Chess/                     # Static game source and registration
 ├── scripts/build-games.mjs       # Builds every registered child
 ├── tests/                        # Publishing checks
 ├── docs/adding-games.md
@@ -21,9 +23,11 @@ Play/
 └── CNAME
 ```
 
-The actual game source remains in [Silent-Stairs](https://github.com/aravindmarri/Silent-Stairs). PLAY downloads it when publishing and places the built game at [play.aravindmarri.com/Silent-Stairs/](https://play.aravindmarri.com/Silent-Stairs/). Other children follow the same /Game-Id/ address pattern.
+The actual Silent Stairs source remains in [its own repository](https://github.com/aravindmarri/Silent-Stairs). PLAY downloads it when publishing and places the built game at [play.aravindmarri.com/Silent-Stairs/](https://play.aravindmarri.com/Silent-Stairs/). Eight Ball Pool and Chess are static children stored in this parent repository. Every child uses its own `/Game-Id/` address.
 
 ## Develop locally
+
+Eight Ball Pool lives in `games/Eight-Ball-Pool/source/` and Chess in `games/Chess/source/`, with registrations alongside each. They publish at `/Eight-Ball-Pool/` and `/Chess/`, and appear automatically in the searchable game library. Their static sources are part of PLAY. Silent Stairs continues to use its independent repository.
 
 Use Node.js 22 or newer, npm, and Git. PLAY itself has no npm dependencies.
 
