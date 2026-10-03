@@ -1,34 +1,19 @@
 import * as THREE from 'three';
 import CameraControls from 'camera-controls';
-CameraControls.install({ THREE });
-export type Viewpoint = { eye: [number,number,number]; target: [number,number,number] };
+import type { CameraSafety } from './CameraSafety';
+CameraControls.install({THREE});
+export type Viewpoint={eye:[number,number,number];target:[number,number,number];subject?:THREE.Object3D;bounds?:THREE.Box3;panel?:boolean};
 export class CameraRig {
-  camera = new THREE.PerspectiveCamera(48, 1, .05, 70);
-  controls: CameraControls;
-  reduced = false;
-  constructor(canvas: HTMLCanvasElement) {
-    this.controls = new CameraControls(this.camera, canvas);
-    this.controls.smoothTime = .28;
-    this.controls.draggingSmoothTime = .14;
-    this.controls.mouseButtons.left = CameraControls.ACTION.NONE;
-    this.controls.mouseButtons.right = CameraControls.ACTION.NONE;
-    this.controls.mouseButtons.wheel = CameraControls.ACTION.NONE;
-    this.controls.touches.one = CameraControls.ACTION.NONE;
-    this.controls.touches.two = CameraControls.ACTION.NONE;
-  }
-  async go(view: Viewpoint, immediate = false) {
-    this.controls.smoothTime = this.reduced ? .07 : .24;
-    await this.controls.setLookAt(...view.eye, ...view.target, !immediate);
-  }
-  look(dx: number, dy: number) {
-    const eye=this.controls.getPosition(new THREE.Vector3(),true);
-    const direction=this.controls.getTarget(new THREE.Vector3(),true).sub(eye);
-    direction.applyAxisAngle(new THREE.Vector3(0,1,0),dx);
-    const right=new THREE.Vector3().crossVectors(direction,new THREE.Vector3(0,1,0)).normalize();
-    direction.applyAxisAngle(right,dy);
-    const target=eye.clone().add(direction);
-    void this.controls.setLookAt(...eye.toArray() as [number,number,number],...target.toArray() as [number,number,number],true);
-  }
-  resize(w: number, h: number) { this.camera.aspect = w / h; this.camera.fov = w < 700 ? 54 : 48; this.camera.updateProjectionMatrix(); }
-  tick(dt: number) { this.controls.update(dt); }
+ history:{duration:number;segments:number;collisionFree:boolean;cancelled:boolean}[]=[];
+ camera=new THREE.PerspectiveCamera(48,1,.04,90);controls:CameraControls;reduced=false;safety?:CameraSafety;
+ private move?:{path:THREE.Vector3[];lengths:number[];total:number;start:THREE.Vector3;target:THREE.Vector3;elapsed:number;startedAt:number;duration:number;done:()=>void};
+ private available={w:1,h:1};private width=1;private height=1;private shakeTime=0;
+ constructor(canvas:HTMLCanvasElement){this.controls=new CameraControls(this.camera,canvas);this.controls.mouseButtons.left=CameraControls.ACTION.NONE;this.controls.mouseButtons.right=CameraControls.ACTION.NONE;this.controls.mouseButtons.wheel=CameraControls.ACTION.NONE;this.controls.touches.one=CameraControls.ACTION.NONE;this.controls.touches.two=CameraControls.ACTION.NONE;}
+ layout(panel:boolean){const w=this.width,h=this.height;let right=0,bottom=0,top=76;if(w<700){top=68;bottom=panel?Math.min(h*.43+151,h*.62):145;}else{right=panel?360:0;bottom=145;}this.available={w:w-right-40,h:h-top-bottom-24};this.camera.setViewOffset(w,h,right/2,(bottom-top)/2,w,h);}
+ fit(view:Viewpoint):Viewpoint{if(!view.subject&&!view.bounds)return view;const bounds=view.bounds?.clone()||new THREE.Box3().setFromObject(view.subject!);const target=bounds.getCenter(new THREE.Vector3()),direction=new THREE.Vector3(...view.eye).sub(new THREE.Vector3(...view.target)).normalize();const right=new THREE.Vector3().crossVectors(direction,new THREE.Vector3(0,1,0)).normalize(),up=new THREE.Vector3().crossVectors(direction,right).normalize();let halfW=0,halfH=0,depth=0;for(const x of [bounds.min.x,bounds.max.x])for(const y of [bounds.min.y,bounds.max.y])for(const z of [bounds.min.z,bounds.max.z]){const p=new THREE.Vector3(x,y,z).sub(target);halfW=Math.max(halfW,Math.abs(p.dot(right)));halfH=Math.max(halfH,Math.abs(p.dot(up)));depth=Math.max(depth,Math.abs(p.dot(direction)));}const tan=Math.tan(THREE.MathUtils.degToRad(this.camera.fov/2));const distance=Math.max(halfH/(tan*this.available.h/this.height),halfW/(tan*this.camera.aspect*this.available.w/this.width))*1.12+depth;let eye=target.clone().addScaledVector(direction,distance);if(this.safety){const candidates=[eye];if(eye.y>4.5&&target.y<4.5){const flat=direction.clone();flat.y=(4.5-target.y)/distance;const horizontal=Math.sqrt(1-flat.y*flat.y);const length=Math.hypot(flat.x,flat.z);flat.x=flat.x/length*horizontal;flat.z=flat.z/length*horizontal;candidates.unshift(target.clone().addScaledVector(flat,distance));}for(const a of [-.16,.16,-.32,.32])candidates.push(target.clone().addScaledVector(direction.clone().applyAxisAngle(new THREE.Vector3(0,1,0),a),distance));const clear=candidates.find(p=>!this.safety!.inside(p)&&!this.safety!.occluded(p,target,view.subject));if(clear)eye=clear;}return {...view,eye:eye.toArray() as Viewpoint['eye'],target:target.toArray() as Viewpoint['target']};}
+ async go(raw:Viewpoint,immediate=false,duration=1.15){if(this.move){this.history.push({duration:this.move.elapsed,segments:this.move.path.length-1,collisionFree:true,cancelled:true});this.move.done();}this.move=undefined;this.safety?.refresh();const view=this.fit(raw),eye=new THREE.Vector3(...view.eye),target=new THREE.Vector3(...view.target);if(immediate){this.controls.setLookAt(...view.eye,...view.target,false);this.controls.update(0);return;}const from=this.camera.position.clone(),path=this.safety?.route(from,eye)||[from,eye];const lengths=path.slice(1).map((p,i)=>p.distanceTo(path[i]));return new Promise<void>(done=>{this.move={path,lengths,total:lengths.reduce((a,b)=>a+b,0),start:this.controls.getTarget(new THREE.Vector3()),target,elapsed:0,startedAt:performance.now(),duration:this.reduced?.16:duration,done};});}
+ look(dx:number,dy:number){if(this.move)return;const eye=this.camera.position.clone(),d=this.controls.getTarget(new THREE.Vector3()).sub(eye);d.applyAxisAngle(new THREE.Vector3(0,1,0),dx);const right=new THREE.Vector3().crossVectors(d,new THREE.Vector3(0,1,0)).normalize();d.applyAxisAngle(right,dy);const t=eye.clone().add(d);this.controls.setLookAt(...eye.toArray() as Viewpoint['eye'],...t.toArray() as Viewpoint['target'],false);}
+ shake(){if(!this.reduced)this.shakeTime=.12;}
+ resize(w:number,h:number){this.width=w;this.height=h;this.camera.aspect=w/h;this.camera.fov=48;this.camera.updateProjectionMatrix();}
+ tick(dt:number){const m=this.move;if(m){m.elapsed=(performance.now()-m.startedAt)/1000;const t=Math.min(1,m.elapsed/m.duration),e=t*t*(3-2*t);let distance=e*m.total,index=0;while(index<m.lengths.length-1&&distance>m.lengths[index])distance-=m.lengths[index++];const p=m.path[index].clone().lerp(m.path[index+1],m.lengths[index]?distance/m.lengths[index]:1),target=m.start.clone().lerp(m.target,e);this.controls.setLookAt(...p.toArray() as Viewpoint['eye'],...target.toArray() as Viewpoint['target'],false);if(t===1){this.history.push({duration:m.elapsed,segments:m.path.length-1,collisionFree:m.path.slice(1).every((p,i)=>this.safety?.clear(m.path[i],p)??true),cancelled:false});this.move=undefined;m.done();}}this.controls.update(dt);if(this.shakeTime>0){this.shakeTime-=dt;this.camera.position.x+=Math.sin(this.shakeTime*140)*.0015;}}
 }

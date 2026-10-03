@@ -8,17 +8,17 @@ export class Interaction {
   private point = new THREE.Vector2();
   private down: { x: number; y: number; moved: boolean } | null = null;
   private pointers = new Map<number, { x: number; y: number }>();
-  private pinch = 0;
-  constructor(private canvas: HTMLCanvasElement, private camera: THREE.Camera, private callbacks: { click: (id: string) => void; drag: (dx: number, dy: number) => void; zoom: (delta: number) => void; hover: (label: string) => void; back: () => void }) {
-    canvas.addEventListener('pointerdown', e => { if (!this.enabled) return; canvas.setPointerCapture(e.pointerId); this.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY}); this.down = { x: e.clientX, y: e.clientY, moved: false }; if (this.pointers.size === 2) this.pinch = this.distance(); });
+  private pinch = 0;private dial:string|null=null;private dialDrag=0;
+  constructor(private canvas: HTMLCanvasElement, private camera: THREE.Camera, private callbacks: { dial?: (id:string,delta:number)=>void; click: (id: string) => void; drag: (dx: number, dy: number) => void; zoom: (delta: number) => void; hover: (label: string) => void; back: () => void }) {
+    canvas.addEventListener('pointerdown', e => { if (!this.enabled) return; canvas.setPointerCapture(e.pointerId);const picked=this.pick(e.clientX,e.clientY);this.dial=picked?.id.startsWith('dial-')?picked.id:null;this.dialDrag=0; this.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY}); this.down = { x: e.clientX, y: e.clientY, moved: false }; if (this.pointers.size === 2) this.pinch = this.distance(); });
     canvas.addEventListener('pointermove', e => {
       if (!this.enabled) return;
       if (this.pointers.has(e.pointerId)) this.pointers.set(e.pointerId,{x:e.clientX,y:e.clientY});
       if (this.down && this.pointers.size > 1) { const d = this.distance(); this.callbacks.zoom((this.pinch - d) * 3); this.pinch = d; this.down.moved = true; return; }
-      if (this.down) { const dx = e.clientX - this.down.x, dy = e.clientY - this.down.y; if (Math.abs(dx)+Math.abs(dy)>3 || this.down.moved) { this.down.moved = true; this.callbacks.drag(dx,dy); this.down.x=e.clientX;this.down.y=e.clientY; } }
+      if (this.down) { const dx = e.clientX - this.down.x, dy = e.clientY - this.down.y; if (Math.abs(dx)+Math.abs(dy)>3 || this.down.moved) { this.down.moved = true; if(this.dial){this.dialDrag-=dy;if(Math.abs(this.dialDrag)>14){this.callbacks.dial?.(this.dial,Math.sign(this.dialDrag));this.dialDrag=0;}}else this.callbacks.drag(dx,dy); this.down.x=e.clientX;this.down.y=e.clientY; } }
       else this.updateHover(e.clientX,e.clientY);
     });
-    canvas.addEventListener('pointerup', e => { this.pointers.delete(e.pointerId); if (this.enabled && this.down && !this.down.moved && e.button !== 2) { const hit = this.pick(e.clientX,e.clientY); if(hit) this.callbacks.click(hit.id); } this.down=null; });
+    canvas.addEventListener('pointerup', e => { this.pointers.delete(e.pointerId); if (this.enabled && this.down && !this.down.moved && e.button !== 2) { const hit = this.pick(e.clientX,e.clientY); if(hit) this.callbacks.click(hit.id); } this.down=null;this.dial=null; });
     canvas.addEventListener('pointercancel', () => { this.down=null;this.pointers.clear(); });
     canvas.addEventListener('contextmenu', e=>{e.preventDefault();if(this.enabled)this.callbacks.back();});
     canvas.addEventListener('wheel', e=>{if(this.enabled){e.preventDefault();this.callbacks.zoom(e.deltaY);}},{passive:false});
