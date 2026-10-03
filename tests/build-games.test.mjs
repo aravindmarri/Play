@@ -8,6 +8,14 @@ import { assembleSite, createCatalog, npmEnvironment, readGames, resolveGameOutp
 const registeredGame = JSON.parse(readFileSync(new URL('../games/Silent-Stairs/game.json', import.meta.url), 'utf8'));
 const game = (id, extra = {}) => ({ ...structuredClone(registeredGame), id, featured: false, ...extra });
 
+test('a nested Vite game keeps its public output and rejects unsafe project directories', () => {
+  const registered = game('Locked-Room', { build: { type: 'vite', directory: 'games/Locked-Room/source', output: 'games/Locked-Room/source/dist' } });
+  assert.doesNotThrow(() => validateGames([registered]));
+  for (const directory of ['../escape', '/tmp', 'C:/temp', 'games/../../outside', 'games//nested', 'games;command']) {
+    assert.throws(() => validateGames([{ ...registered, build: { ...registered.build, directory } }]), /build.directory/);
+  }
+});
+
 function fixture(t) {
   const root = mkdtempSync(join(tmpdir(), 'play-build-test-'));
   t.after(() => {

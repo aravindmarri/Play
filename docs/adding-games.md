@@ -1,6 +1,6 @@
 # Adding a child game to PLAY
 
-Keep each game in its own public GitHub repository. PLAY is the parent gallery and publishing project.
+Keep each game self-contained and register it in PLAY. Larger games can live in their own public GitHub repository; small static games may live in `games/<Game-Id>/source/` in the parent repository, as Eight Ball Pool and Chess do.
 
 ## Register a game
 

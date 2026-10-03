@@ -1,0 +1,24 @@
+{
+  "name": "the-locked-room",
+  "private": true,
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "preview": "vite preview --host 127.0.0.1",
+    "test": "node --experimental-transform-types --disable-warning=ExperimentalWarning --test tests/engine.test.ts"
+  },
+  "dependencies": {
+    "three": "0.186.1",
+    "postprocessing": "6.39.5",
+    "camera-controls": "3.1.2",
+    "lil-gui": "0.21.0"
+  },
+  "devDependencies": {
+    "@types/three": "0.186.0",
+    "typescript": "7.0.2",
+    "vite": "8.3.2",
+    "@types/node": "26.6.3"
+  }
+}

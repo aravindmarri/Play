@@ -70,10 +70,14 @@ const COLORS = {
 };
 
 let balls = [];
+const POOL_SETTINGS_KEY = 'aravind.pool.settings.v1';
+function readPoolSettings() { try { return JSON.parse(localStorage.getItem(POOL_SETTINGS_KEY) || '{}') || {}; } catch { return {}; } }
+function writePoolSettings(next) { try { localStorage.setItem(POOL_SETTINGS_KEY, JSON.stringify({ ...readPoolSettings(), ...next })); } catch { /* settings are optional */ } }
+const savedPoolSettings = readPoolSettings();
 let currentPlayer = 0;
 let playerGroups = [null, null];
 let matchScores = [0, 0];
-let mode = 'local';
+let mode = savedPoolSettings.mode === 'solo' ? 'solo' : 'local';
 let breakPending = true;
 let aimingAngle = 0;
 let cueInHand = false;
@@ -84,7 +88,7 @@ let drag = null;
 let hitPointMode = false;
 let contactPointSelected = false;
 let hintAvailable = true;
-let lastStrokePower = .34;
+let lastStrokePower = .6;
 let lastPullDistance = MAX_PULL_DISTANCE * lastStrokePower;
 const selectedHitLocal = new THREE.Vector3(0, 0, 1);
 const pendingHitLocal = new THREE.Vector3(0, 0, 1);
@@ -99,7 +103,7 @@ let targetHintClock = 0;
 let width = 0;
 let height = 0;
 let pointer = { x: 350, y: 320, inside: false };
-let soundEnabled = true;
+let soundEnabled = savedPoolSettings.soundEnabled !== false;
 let audioContext;
 let lastSoundAt = 0;
 let computerTimer = 0;
@@ -114,6 +118,9 @@ function makeBall(number, x, y) {
 }
 
 function makeRack() {
+  document.body.classList.add('match-started');
+  lastStrokePower = .6;
+  lastPullDistance = MAX_PULL_DISTANCE * lastStrokePower;
   clearTimeout(computerTimer);
   currentPlayer = 0;
   playerGroups = [null, null];
@@ -137,7 +144,7 @@ function makeRack() {
   canvasWrap.classList.remove('hit-point-mode', 'dragging-cue');
   hitPointButton.setAttribute('aria-pressed', 'false');
   hitPointButton.querySelector('small').textContent = 'SELECT';
-  updatePowerMeter(0, true);
+  updatePowerMeter(.6, false);
   const positions = [];
   const rackX = 786;
   const rackY = 320;
@@ -948,7 +955,7 @@ function cancelShotSetup(message = 'Shot setup cancelled.') {
     if (canvas.hasPointerCapture?.(drag.id)) canvas.releasePointerCapture(drag.id);
     drag = null;
     canvasWrap.classList.remove('dragging-cue');
-    updatePowerMeter(0, true);
+    updatePowerMeter(.6, false);
     instruction.textContent = 'Aim first. Press anywhere and pull back for power; release to shoot.';
     setToast(message);
     return true;
@@ -1191,7 +1198,7 @@ function onPointerUp(event) {
   canvasWrap.classList.remove('dragging-cue');
   if (power > .055) shoot(power, false, pullDistance);
   else {
-    updatePowerMeter(0, true);
+    updatePowerMeter(.6, false);
     instruction.textContent = 'Direction set. Press anywhere and pull when you are ready.';
   }
 }
@@ -1232,6 +1239,7 @@ document.querySelector('#rack-button').addEventListener('click', () => makeRack(
 document.querySelector('#mode-button').addEventListener('click', () => modeDialog.showModal());
 document.querySelectorAll('[data-mode]').forEach(button => button.addEventListener('click', () => {
   mode = button.dataset.mode;
+  writePoolSettings({ mode });
   modeDialog.close();
   makeRack();
   setToast(mode === 'solo' ? 'Solo practice. You play both sides.' : 'Two-player mode. Pass the device between turns.');
@@ -1255,8 +1263,12 @@ window.addEventListener('keydown', event => {
   } else if (event.code.toLowerCase() === 'r' && event.target === document.body) makeRack();
 });
 
+const initialSoundButton = document.querySelector('#sound-button');
+initialSoundButton.setAttribute('aria-pressed', String(soundEnabled));
+initialSoundButton.innerHTML = `<span class="sound-dot"></span> SOUND ${soundEnabled ? 'ON' : 'OFF'}`;
 document.querySelector('#sound-button').addEventListener('click', event => {
   soundEnabled = !soundEnabled;
+  writePoolSettings({ soundEnabled });
   event.currentTarget.setAttribute('aria-pressed', String(soundEnabled));
   event.currentTarget.innerHTML = `<span class="sound-dot"></span> SOUND ${soundEnabled ? 'ON' : 'OFF'}`;
   if (soundEnabled) wakeAudio();

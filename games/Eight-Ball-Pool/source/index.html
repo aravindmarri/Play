@@ -4,8 +4,8 @@
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
     <meta name="theme-color" content="#091310">
-    <meta name="description" content="A pocket-size pool hall. Rack up, call your shot, and clear the table.">
-    <title>Eight Ball — PLAYROOM</title>
+    <meta name="description" content="Play Eight Ball Pool in Aravind’s Game Gallery. Aim, draw the cue, and clear the table in a polished 3D pool hall."><meta property="og:type" content="website"><meta property="og:title" content="Eight Ball Pool — Aravind’s Game Gallery"><meta property="og:description" content="Aim, draw the cue, and clear the table in Aravind’s 3D pool hall."><meta property="og:url" content="https://play.aravindmarri.com/Eight-Ball-Pool/"><meta property="og:image" content="https://play.aravindmarri.com/assets/og-pool.png"><meta name="twitter:card" content="summary_large_image"><meta name="twitter:title" content="Eight Ball Pool — Aravind’s Game Gallery"><meta name="twitter:description" content="Aim, draw the cue, and clear the table in Aravind’s 3D pool hall."><meta name="twitter:image" content="https://play.aravindmarri.com/assets/og-pool.png">
+    <title>Eight Ball Pool — Aravind’s Game Gallery</title>
     <link rel="stylesheet" href="./style.css">
     <script type="module" src="./pool.js"></script>
   </head>
@@ -13,7 +13,7 @@
     <div class="page-glow" aria-hidden="true"></div>
     <main class="game-shell">
       <header class="topbar">
-        <a class="wordmark" href="../" aria-label="Back to Playroom"><span class="wordmark-mark">P</span><span>PLAYROOM<small>THE GAME ROOM</small></span></a>
+        <a class="wordmark" href="https://play.aravindmarri.com/" aria-label="ARAVIND / Eight Ball Pool — back to gallery"><span>ARAVIND <span class="brand-divider">/</span> EIGHT BALL POOL</span></a>
         <span class="topbar-center">A LITTLE FRIENDLY COMPETITION</span>
         <button class="text-button" id="sound-button" type="button" aria-pressed="true"><span class="sound-dot"></span> SOUND ON</button>
       </header>
@@ -41,7 +41,7 @@
 
       <section class="table-card" aria-label="Eight Ball Pool game">
         <div class="table-topline"><span><span class="live-dot"></span><span id="turn-label">YOUR TURN</span></span><button class="text-button game-mode" id="mode-button" type="button" aria-label="Switch between two player and solo practice mode">2 PLAYERS <span>⌄</span></button></div>
-        <div class="canvas-wrap" id="canvas-wrap">
+        <p class="rotate-hint" aria-hidden="true">↻ Rotate your phone for a bigger table</p><div class="canvas-wrap" id="canvas-wrap">
           <canvas id="pool-table" aria-label="Pool table. Move the pointer to aim. Drag backward and release to shoot." tabindex="0"></canvas>
           <div class="ball-tooltip" id="ball-tooltip" role="tooltip" hidden>
             <strong id="ball-tooltip-number"></strong>

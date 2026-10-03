@@ -50,6 +50,10 @@ export function validateGames(games, siteNames = []) {
         || output.split('/').some(part => part === '..')) {
       throw new Error(`${game.id}: build.output must be a relative folder such as dist, public, or .`);
     }
+    if (game.build.directory !== undefined && (typeof game.build.directory !== 'string'
+      || !/^[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*$/.test(game.build.directory))) {
+      throw new Error(`${game.id}: build.directory must be a safe relative project folder.`);
+    }
   }
   if (games.filter(game => game.featured).length > 1) throw new Error('Choose at most one featured game.');
   return games;
@@ -183,9 +187,12 @@ export function buildGames(root = projectRoot) {
     console.log(`Building ${game.title} from ${game.repository}@${game.ref}`);
     run('git', ['clone', '--depth', '1', '--single-branch', '--branch', game.ref, '--', `https://github.com/${game.repository}.git`, source], root);
     if (game.build.type === 'vite') {
-      if (!existsSync(join(source, 'package-lock.json'))) throw new Error(`${game.id}: Vite games need a committed package-lock.json.`);
-      runNpm(['ci'], source, root);
-      runNpm(['run', 'build', '--', `--base=/${game.id}/`], source, root);
+      const project = game.build.directory ? resolve(source, game.build.directory) : source;
+      requireInside(source, project, true);
+      requireInside(realpathSync(source), realpathSync(project), true);
+      if (!existsSync(join(project, 'package-lock.json'))) throw new Error(`${game.id}: Vite games need a committed package-lock.json.`);
+      runNpm(['ci'], project, root);
+      runNpm(['run', 'build', '--', `--base=/${game.id}/`], project, root);
     }
     sources.set(game.id, source);
   }

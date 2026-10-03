@@ -5,7 +5,7 @@
   "description": "A 3D pool table with rolling numbered balls, pull-back cue controls, bank-shot guides and two-player matches. Aim, choose your power, and clear your colors before the eight.",
   "genre": "Sports · Pool",
   "engine": "Three.js · WebGL",
-  "playMode": "Two players · Solo · Browser",
+  "playMode": "Two players · Solo practice · Browser",
   "repository": "aravindmarri/Play",
   "ref": "main",
   "build": { "type": "static", "output": "games/Eight-Ball-Pool/source" },

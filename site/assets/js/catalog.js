@@ -22,9 +22,12 @@ function card(game) {
 }
 
 try {
-  const response = await fetch('./games.json');
+  const response = await fetch('./games.json', { cache: 'no-store' });
   if (!response.ok) throw new Error(`Catalog returned ${response.status}`);
-  const games = await response.json();
+  const games = (await response.json()).sort((a, b) => {
+    const order = { 'Silent-Stairs': 0, 'Eight-Ball-Pool': 1, Chess: 2, 'Locked-Room': 3 };
+    return (order[a.id] ?? 10) - (order[b.id] ?? 10) || a.title.localeCompare(b.title);
+  });
   document.querySelector('#game-count').textContent = String(games.length).padStart(2, '0');
   document.querySelector('#game-count-label').textContent = `${games.length === 1 ? 'GAME' : 'GAMES'} AND COUNTING`;
   let shown = [];

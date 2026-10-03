@@ -1,0 +1,13 @@
+{
+  "id": "Chess",
+  "title": "Chess",
+  "subtitle": "A classic, set in a new light.",
+  "description": "A polished 3D chess game with full chess rules. Play a friend locally or challenge the computer.",
+  "genre": "Strategy · Chess",
+  "engine": "Three.js · WebGL",
+  "playMode": "Single player · Local duel · Browser",
+  "repository": "aravindmarri/Play",
+  "ref": "main",
+  "build": { "type": "static", "output": "games/Chess/source" },
+  "featured": false
+}

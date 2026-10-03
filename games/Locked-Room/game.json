@@ -1,0 +1,13 @@
+{
+  "id": "Locked-Room",
+  "title": "The Locked Room",
+  "subtitle": "Every silence keeps a secret.",
+  "description": "A candle, a forgotten letter, a clockmaker’s final secret. Escape an atmospheric 3D study through observation, touch and sound.",
+  "genre": "Escape room · Puzzle",
+  "engine": "Three.js · WebGL2",
+  "playMode": "Single player · Browser",
+  "repository": "aravindmarri/Play",
+  "ref": "main",
+  "build": { "type": "vite", "directory": "games/Locked-Room/source", "output": "games/Locked-Room/source/dist" },
+  "featured": false
+}
